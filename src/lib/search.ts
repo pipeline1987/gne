@@ -1,6 +1,10 @@
+import { relatedTerms } from './concepts'
+import type { ParsedQuery } from './nl'
+import { contentTokens, effectiveFilters, parseNaturalQuery } from './nl'
+import { semanticScore } from './tfidf'
 import type { Article, SearchFilters, Topic } from '../types'
 import { TOPICS } from '../types'
-import { bestTokenMatch, bestTokenSimilarity, queryTokens, tokenize } from './fuzzy'
+import { bestTokenMatch, bestTokenSimilarity, tokenize, variantsFor } from './fuzzy'
 
 export const EMPTY_FILTERS: SearchFilters = {
   topic: '',
@@ -16,8 +20,9 @@ const DEK_WEIGHT = 5
 const LEAD_WEIGHT = 4
 const BODY_WEIGHT = 1
 const PHRASE_BONUS = 18
+const SEMANTIC_WEIGHT = 55
 const MIN_TOKEN_HIT = 0.55
-/** Mentions of very common words ("night", "gotham") are noise outside the headline. */
+const MIN_COSINE = 0.1
 const DEK_DF_MAX = 0.2
 const BODY_DF_MAX = 0.12
 
@@ -40,6 +45,10 @@ const corpusCache = new WeakMap<Article[], CorpusIndex>()
 
 export function isTopic(value: string): value is Topic {
   return (TOPICS as readonly string[]).includes(value)
+}
+
+export function interpretQuery(raw: string): ParsedQuery {
+  return parseNaturalQuery(raw)
 }
 
 function indexCorpus(articles: Article[]): CorpusIndex {
@@ -96,22 +105,46 @@ function cappedHit(
   return fraction <= maxDf ? match.score : 0
 }
 
-function articleScore(
+function expandedHit(
+  token: string,
+  field: (candidate: string) => number,
+) {
+  let best = field(token)
+  const seed = variantsFor(token)[0]
+  for (const related of relatedTerms(seed)) {
+    if (related === token || related === seed) continue
+    best = Math.max(best, field(related) * 0.86)
+  }
+  return best
+}
+
+function lexicalScore(
   item: IndexedArticle,
   tokens: string[],
   df: Map<string, number>,
   corpusSize: number,
+  expand: boolean,
 ) {
   let score = 0
+  let hits = 0
+  const hit = expand
+    ? expandedHit
+    : (token: string, field: (candidate: string) => number) => field(token)
 
   for (const token of tokens) {
-    const titleHit = bestTokenSimilarity(token, item.title)
-    const metaHit = bestTokenSimilarity(token, item.meta)
-    const dekHit = cappedHit(token, item.dek, df, corpusSize, DEK_DF_MAX)
-    const leadHit = cappedHit(token, item.lead, df, corpusSize, DEK_DF_MAX)
-    const bodyHit = cappedHit(token, item.body, df, corpusSize, BODY_DF_MAX)
+    const titleHit = hit(token, (candidate) => bestTokenSimilarity(candidate, item.title))
+    const metaHit = hit(token, (candidate) => bestTokenSimilarity(candidate, item.meta))
+    const dekHit = hit(token, (candidate) =>
+      cappedHit(candidate, item.dek, df, corpusSize, DEK_DF_MAX),
+    )
+    const leadHit = hit(token, (candidate) =>
+      cappedHit(candidate, item.lead, df, corpusSize, DEK_DF_MAX),
+    )
+    const bodyHit = hit(token, (candidate) =>
+      cappedHit(candidate, item.body, df, corpusSize, BODY_DF_MAX),
+    )
     const raw = Math.max(titleHit, metaHit, dekHit, leadHit, bodyHit)
-    if (raw < MIN_TOKEN_HIT) return 0
+    if (raw >= MIN_TOKEN_HIT) hits += 1
 
     score +=
       titleHit * TITLE_WEIGHT +
@@ -125,26 +158,38 @@ function articleScore(
     score += PHRASE_BONUS
   }
 
-  return score
+  return { score, hits }
 }
 
 export function searchArticles(articles: Article[], filters: SearchFilters) {
-  const tokens = queryTokens(filters.q)
+  const parsed = parseNaturalQuery(filters.q)
+  const applied = effectiveFilters(filters, parsed)
+  const tokens = contentTokens(parsed, filters.q)
+  const candidates = articles.filter((article) => passesStructuredFilters(article, applied))
 
   if (tokens.length === 0) {
-    return articles
-      .filter((article) => passesStructuredFilters(article, filters))
-      .sort((a, b) => b.date.localeCompare(a.date))
+    return candidates.sort((a, b) => b.date.localeCompare(a.date))
   }
 
   const { indexed, df } = indexCorpus(articles)
+  const bySlug = new Map(indexed.map((item) => [item.article.slug, item]))
   const scored: { article: Article; score: number }[] = []
 
-  for (const item of indexed) {
-    if (!passesStructuredFilters(item.article, filters)) continue
-    const score = articleScore(item, tokens, df, articles.length)
-    if (score <= 0) continue
-    scored.push({ article: item.article, score })
+  for (const article of candidates) {
+    const item = bySlug.get(article.slug)
+    if (!item) continue
+    const lexical = lexicalScore(item, tokens, df, articles.length, parsed.natural)
+    const meaning = semanticScore(articles, article.slug, tokens)
+    const combined = lexical.score + meaning * SEMANTIC_WEIGHT
+    const strongLexical = lexical.hits > 0 && lexical.score >= TITLE_WEIGHT * 0.7
+
+    if (parsed.natural) {
+      if (!strongLexical && meaning < MIN_COSINE) continue
+    } else if (lexical.hits < tokens.length) {
+      continue
+    }
+
+    scored.push({ article, score: combined })
   }
 
   return scored

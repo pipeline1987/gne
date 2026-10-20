@@ -49,8 +49,8 @@ export function Archive() {
         <div>
           <h1>The archive</h1>
           <p className="lede">
-            Twenty years of Gotham after dark. Filter by desk, decade, year, or byline — and search
-            still forgives a bad night of typing.
+            Twenty years of Gotham after dark. Ask in plain English, or filter by desk, decade, year,
+            and byline.
           </p>
         </div>
         <div className="count">

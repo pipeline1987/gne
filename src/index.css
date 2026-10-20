@@ -409,6 +409,20 @@ h4 {
   max-width: 36rem;
 }
 
+.search-hint,
+.heard {
+  margin: 0.45rem 0 0;
+  color: var(--fog);
+  font-size: 0.88rem;
+}
+
+.heard {
+  color: var(--gold-dim);
+  font-family: var(--condensed);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .active-chips {
   display: flex;
   flex-wrap: wrap;
