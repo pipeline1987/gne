@@ -25,7 +25,7 @@ export function Filters({ value, onChange, onReset }: Props) {
           Keyword
           <input
             type="search"
-            placeholder="plume, Signal, penguin…"
+            placeholder="pengiun, arkum, Vale…"
             value={value.q}
             onChange={(event) => update('q', event.target.value)}
           />

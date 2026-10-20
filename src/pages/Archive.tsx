@@ -51,12 +51,13 @@ export function Archive() {
         <div>
           <h1>The archive</h1>
           <p className="lede">
-            Twenty years of Gotham after dark. Search by topic, author, and date — or walk a year
-            at a time.
+            Twenty years of Gotham after dark. Search by topic, author, and date — misspellings
+            still land on the closest copy.
           </p>
         </div>
         <div className="count">
           {results.length} {results.length === 1 ? 'piece' : 'pieces'}
+          {filters.q.trim() ? ' · closest first' : ''}
         </div>
       </div>
 
@@ -82,7 +83,9 @@ export function Archive() {
       </div>
 
       {results.length === 0 ? (
-        <p className="empty">No copy matches. The night is large; try a wider date or another desk.</p>
+        <p className="empty">
+          No copy close enough. Try another spelling, a desk, a byline, or a wider year.
+        </p>
       ) : (
         results.map((article) => (
           <article className="listing" key={article.slug}>
