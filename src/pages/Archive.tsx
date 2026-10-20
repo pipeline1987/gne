@@ -1,7 +1,9 @@
 import { useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { Facets } from '../components/Facets'
 import { Filters } from '../components/Filters'
-import { ARTICLES, yearsInArchive } from '../data/articles'
+import { ARTICLES } from '../data/articles'
+import { buildFacets } from '../lib/facets'
 import { formatDate } from '../lib/format'
 import { EMPTY_FILTERS, isTopic, searchArticles } from '../lib/search'
 import type { SearchFilters } from '../types'
@@ -29,21 +31,17 @@ function paramsFromFilters(filters: SearchFilters) {
 
 export function Archive() {
   const [params, setParams] = useSearchParams()
-  const filters = filtersFromParams(params)
+  const queryKey = params.toString()
+  const filters = useMemo(
+    () => filtersFromParams(new URLSearchParams(queryKey)),
+    [queryKey],
+  )
   const results = useMemo(() => searchArticles(ARTICLES, filters), [filters])
-  const years = yearsInArchive()
+  const facets = useMemo(() => buildFacets(ARTICLES, filters), [filters])
 
   function setFilters(next: SearchFilters) {
     setParams(paramsFromFilters(next), { replace: true })
   }
-
-  const fromYear = filters.from.slice(0, 4)
-  const activeYear =
-    filters.from.endsWith('-01-01') &&
-    filters.to.endsWith('-12-31') &&
-    fromYear === filters.to.slice(0, 4)
-      ? fromYear
-      : ''
 
   return (
     <>
@@ -51,8 +49,8 @@ export function Archive() {
         <div>
           <h1>The archive</h1>
           <p className="lede">
-            Twenty years of Gotham after dark. Search by topic, author, and date — misspellings
-            still land on the closest copy.
+            Twenty years of Gotham after dark. Filter by desk, decade, year, or byline — and search
+            still forgives a bad night of typing.
           </p>
         </div>
         <div className="count">
@@ -63,46 +61,43 @@ export function Archive() {
 
       <Filters value={filters} onChange={setFilters} onReset={() => setFilters(EMPTY_FILTERS)} />
 
-      <div className="years" aria-label="Jump to year">
-        {years.map((year) => (
-          <button
-            key={year}
-            type="button"
-            className={activeYear === String(year) ? 'chip active' : 'chip'}
-            onClick={() =>
-              setFilters({
-                ...filters,
-                from: `${year}-01-01`,
-                to: `${year}-12-31`,
-              })
-            }
-          >
-            {year}
-          </button>
-        ))}
-      </div>
+      <div className="archive-shell">
+        <Facets
+          filters={filters}
+          desks={facets.desks}
+          decades={facets.decades}
+          years={facets.years}
+          bylines={facets.bylines}
+          deskTotal={facets.deskTotal}
+          dateTotal={facets.dateTotal}
+          bylineTotal={facets.bylineTotal}
+          onChange={setFilters}
+        />
 
-      {results.length === 0 ? (
-        <p className="empty">
-          No copy close enough. Try another spelling, a desk, a byline, or a wider year.
-        </p>
-      ) : (
-        results.map((article) => (
-          <article className="listing" key={article.slug}>
-            <time dateTime={article.date}>{formatDate(article.date)}</time>
-            <div>
-              <div className="kicker">{article.topic}</div>
-              <Link to={`/article/${article.slug}`}>
-                <h2>{article.title}</h2>
-              </Link>
-              <p className="dek">{article.dek}</p>
-              <div className="byline">
-                {article.author} · {article.kicker}
-              </div>
-            </div>
-          </article>
-        ))
-      )}
+        <div className="archive-results">
+          {results.length === 0 ? (
+            <p className="empty">
+              No copy close enough. Clear a facet, try another spelling, or widen the years.
+            </p>
+          ) : (
+            results.map((article) => (
+              <article className="listing" key={article.slug}>
+                <time dateTime={article.date}>{formatDate(article.date)}</time>
+                <div>
+                  <div className="kicker">{article.topic}</div>
+                  <Link to={`/article/${article.slug}`}>
+                    <h2>{article.title}</h2>
+                  </Link>
+                  <p className="dek">{article.dek}</p>
+                  <div className="byline">
+                    {article.author} · {article.kicker}
+                  </div>
+                </div>
+              </article>
+            ))
+          )}
+        </div>
+      </div>
     </>
   )
 }

@@ -30,6 +30,13 @@ export function formatShortDate(iso: string) {
   return `${MONTHS[month - 1].slice(0, 3)} ${day}, ${year}`
 }
 
+export function formatRange(from: string, to: string) {
+  if (from && to) return `${formatShortDate(from)} – ${formatShortDate(to)}`
+  if (from) return `From ${formatShortDate(from)}`
+  if (to) return `Through ${formatShortDate(to)}`
+  return ''
+}
+
 export function yearOf(iso: string) {
   return Number(iso.slice(0, 4))
 }
