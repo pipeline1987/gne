@@ -292,6 +292,11 @@ export function flushSearchLog() {
   commitSearch(next.filters, next.hits)
 }
 
+export function logSearchNow(filters: SearchFilters, hits: number) {
+  logSearchDebounced(filters, hits, 0)
+  flushSearchLog()
+}
+
 export function logClick(slug: string, rank: number, filters: SearchFilters) {
   flushSearchLog()
   if (!isTrackedSearch(filters)) return

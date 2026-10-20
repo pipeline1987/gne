@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { topicSlug } from '../lib/format'
 import { TOPICS } from '../types'
+import { DeskDrawer } from './DeskDrawer'
 
 const today = new Intl.DateTimeFormat('en-US', {
   weekday: 'long',
@@ -38,6 +39,7 @@ export function Layout() {
               </NavLink>
             ))}
             <NavLink to="/archive">Archive</NavLink>
+            <NavLink to="/desk">Desk</NavLink>
             <NavLink to="/ledger">Ledger</NavLink>
             <NavLink to="/about">Newsroom</NavLink>
           </nav>
@@ -51,9 +53,10 @@ export function Layout() {
       <footer className="site-footer">
         <div className="wrap">
           <span>Gotham Night Edition · Night desk since October 31, 2006</span>
-          <span>Tip line answered after dark. Search the night, then read the ledger.</span>
+          <span>Tip line answered after dark. Ask the desk, then read the ledger.</span>
         </div>
       </footer>
+      <DeskDrawer />
     </div>
   )
 }

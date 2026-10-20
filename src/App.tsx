@@ -4,6 +4,7 @@ import { About } from './pages/About'
 import { Archive } from './pages/Archive'
 import { ArticlePage } from './pages/Article'
 import { AuthorPage } from './pages/Author'
+import { Desk } from './pages/Desk'
 import { Home } from './pages/Home'
 import { Ledger } from './pages/Ledger'
 import { NotFound } from './pages/NotFound'
@@ -17,6 +18,7 @@ export default function App() {
           <Route index element={<Home />} />
           <Route path="archive" element={<Archive />} />
           <Route path="ledger" element={<Ledger />} />
+          <Route path="desk" element={<Desk />} />
           <Route path="article/:slug" element={<ArticlePage />} />
           <Route path="author/:slug" element={<AuthorPage />} />
           <Route path="topic/:slug" element={<TopicPage />} />

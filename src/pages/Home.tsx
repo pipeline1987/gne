@@ -94,7 +94,8 @@ export function Home() {
         <h2>What the city asked</h2>
         <PopularAsks limit={8} lead="" />
         <p className="weather">
-          <Link to="/ledger">Open the search ledger</Link> — dead ends, sentences, and the copy people actually opened.
+          <Link to="/desk">Ask the night desk</Link> — or{' '}
+          <Link to="/ledger">open the search ledger</Link> for dead ends and the copy people opened.
         </p>
       </section>
 
