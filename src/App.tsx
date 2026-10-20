@@ -5,6 +5,7 @@ import { Archive } from './pages/Archive'
 import { ArticlePage } from './pages/Article'
 import { AuthorPage } from './pages/Author'
 import { Home } from './pages/Home'
+import { Ledger } from './pages/Ledger'
 import { NotFound } from './pages/NotFound'
 import { TopicPage } from './pages/Topic'
 
@@ -15,6 +16,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="archive" element={<Archive />} />
+          <Route path="ledger" element={<Ledger />} />
           <Route path="article/:slug" element={<ArticlePage />} />
           <Route path="author/:slug" element={<AuthorPage />} />
           <Route path="topic/:slug" element={<TopicPage />} />

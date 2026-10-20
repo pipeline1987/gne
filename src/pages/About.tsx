@@ -12,7 +12,9 @@ export function About() {
         printing from a Tricorner press bay that still smelled like the river. The charter was
         narrow: cover the city after the hearings adjourned. Twenty years later the staff is still
         small, the tip line still rings after dark, and the basement is an archive you can search
-        by topic, author, and date.
+        by topic, author, and date. The night desk keeps a search ledger for the questions that
+        found copy, the ones that died in the stacks, and the pieces readers actually opened.{' '}
+        <Link to="/ledger">Read the ledger</Link>.
       </p>
       <p>
         We are a startup in the only sense that matters in this town — we never got large enough to

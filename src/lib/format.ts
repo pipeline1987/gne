@@ -30,6 +30,16 @@ export function formatShortDate(iso: string) {
   return `${MONTHS[month - 1].slice(0, 3)} ${day}, ${year}`
 }
 
+export function formatClock(iso: string) {
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: 'UTC',
+  }).format(new Date(iso))
+}
+
 export function formatRange(from: string, to: string) {
   if (from && to) return `${formatShortDate(from)} – ${formatShortDate(to)}`
   if (from) return `From ${formatShortDate(from)}`

@@ -38,6 +38,7 @@ export function Layout() {
               </NavLink>
             ))}
             <NavLink to="/archive">Archive</NavLink>
+            <NavLink to="/ledger">Ledger</NavLink>
             <NavLink to="/about">Newsroom</NavLink>
           </nav>
         </div>
@@ -50,7 +51,7 @@ export function Layout() {
       <footer className="site-footer">
         <div className="wrap">
           <span>Gotham Night Edition · Night desk since October 31, 2006</span>
-          <span>Tip line answered after dark. Search the night by topic, author, or date.</span>
+          <span>Tip line answered after dark. Search the night, then read the ledger.</span>
         </div>
       </footer>
     </div>

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { PopularAsks } from '../components/PopularAsks'
 import { Skyline } from '../components/Skyline'
 import { StoryCard } from '../components/StoryCard'
 import { Ticker } from '../components/Ticker'
@@ -88,6 +89,14 @@ export function Home() {
           </Link>
         ))}
       </div>
+
+      <section className="classifieds">
+        <h2>What the city asked</h2>
+        <PopularAsks limit={8} lead="" />
+        <p className="weather">
+          <Link to="/ledger">Open the search ledger</Link> — dead ends, sentences, and the copy people actually opened.
+        </p>
+      </section>
 
       <section className="classifieds">
         <h2>Night classifieds</h2>

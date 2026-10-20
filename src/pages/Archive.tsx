@@ -2,7 +2,9 @@ import { useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Facets } from '../components/Facets'
 import { Filters } from '../components/Filters'
+import { PopularAsks } from '../components/PopularAsks'
 import { ARTICLES } from '../data/articles'
+import { useSearchAnalytics } from '../lib/analytics'
 import { buildFacets } from '../lib/facets'
 import { formatDate } from '../lib/format'
 import { EMPTY_FILTERS, isTopic, searchArticles } from '../lib/search'
@@ -38,6 +40,7 @@ export function Archive() {
   )
   const results = useMemo(() => searchArticles(ARTICLES, filters), [filters])
   const facets = useMemo(() => buildFacets(ARTICLES, filters), [filters])
+  const analytics = useSearchAnalytics(filters, results)
 
   function setFilters(next: SearchFilters) {
     setParams(paramsFromFilters(next), { replace: true })
@@ -60,6 +63,7 @@ export function Archive() {
       </div>
 
       <Filters value={filters} onChange={setFilters} onReset={() => setFilters(EMPTY_FILTERS)} />
+      <PopularAsks />
 
       <div className="archive-shell">
         <Facets
@@ -80,12 +84,15 @@ export function Archive() {
               No copy close enough. Clear a facet, try another spelling, or widen the years.
             </p>
           ) : (
-            results.map((article) => (
+            results.map((article, index) => (
               <article className="listing" key={article.slug}>
                 <time dateTime={article.date}>{formatDate(article.date)}</time>
                 <div>
                   <div className="kicker">{article.topic}</div>
-                  <Link to={`/article/${article.slug}`}>
+                  <Link
+                    to={`/article/${article.slug}`}
+                    onClick={() => analytics.recordClick(article, index + 1)}
+                  >
                     <h2>{article.title}</h2>
                   </Link>
                   <p className="dek">{article.dek}</p>
